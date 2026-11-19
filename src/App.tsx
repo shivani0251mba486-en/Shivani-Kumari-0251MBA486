@@ -125,7 +125,6 @@ export default function App() {
     setAuthError('');
     try {
       const cred = await signInWithPopup(auth, googleProvider);
-      await upsertUserProfile(cred.user, selectedCity);
       return cred.user;
     } catch (err) {
       const code = (err as { code?: string })?.code || '';

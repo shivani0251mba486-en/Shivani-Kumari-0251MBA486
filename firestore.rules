@@ -143,7 +143,7 @@ service cloud.firestore {
 
     // Solar Projects collection (Bookings & 25-Day Turnkey Tracker)
     match /solarProjects/{projectId} {
-      allow get: if isSignedIn() && isValidId(projectId) && existing().ownerId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(projectId) && (resource == null || existing().ownerId == request.auth.uid);
       allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
       allow create: if isSignedIn()
         && isValidId(projectId)
@@ -170,7 +170,7 @@ service cloud.firestore {
 
     // Document Pre-Checks collection
     match /preChecks/{preCheckId} {
-      allow get: if isSignedIn() && isValidId(preCheckId) && existing().ownerId == request.auth.uid;
+      allow get: if isSignedIn() && isValidId(preCheckId) && (resource == null || existing().ownerId == request.auth.uid);
       allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
       allow create: if isSignedIn()
         && isValidId(preCheckId)

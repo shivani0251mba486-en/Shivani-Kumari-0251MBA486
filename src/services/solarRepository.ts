@@ -40,42 +40,58 @@ function clampString(value: string, maxLength: number): string {
   return value.trim().slice(0, maxLength);
 }
 
+const profileUpsertQueue = new Map<string, Promise<void>>();
+
 export async function upsertUserProfile(user: User, preferredCity: CityId): Promise<void> {
-  const path = `users/${user.uid}`;
-  const userRef = doc(db, 'users', user.uid);
+  const previous = profileUpsertQueue.get(user.uid) ?? Promise.resolve();
+  const next = previous
+    .catch(() => undefined)
+    .then(async () => {
+      const path = `users/${user.uid}`;
+      const userRef = doc(db, 'users', user.uid);
 
+      try {
+        const snap = await getDoc(userRef);
+        const displayName = clampString(user.displayName || 'SolarSewa Homeowner', 120);
+        const email = clampString(user.email || 'unknown@example.com', 160);
+        const photoURL = user.photoURL ? clampString(user.photoURL, 500) : undefined;
+
+        if (!snap.exists()) {
+          const payload: Record<string, unknown> = {
+            uid: user.uid,
+            displayName,
+            email,
+            preferredCity,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+          if (photoURL) {
+            payload.photoURL = photoURL;
+          }
+          await setDoc(userRef, payload);
+        } else {
+          const updates: Record<string, unknown> = {
+            displayName,
+            preferredCity,
+            updatedAt: serverTimestamp(),
+          };
+          if (photoURL) {
+            updates.photoURL = photoURL;
+          }
+          await updateDoc(userRef, updates);
+        }
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, path);
+      }
+    });
+
+  profileUpsertQueue.set(user.uid, next);
   try {
-    const snap = await getDoc(userRef);
-    const displayName = clampString(user.displayName || 'SolarSewa Homeowner', 120);
-    const email = clampString(user.email || 'unknown@example.com', 160);
-    const photoURL = user.photoURL ? clampString(user.photoURL, 500) : undefined;
-
-    if (!snap.exists()) {
-      const payload: Record<string, unknown> = {
-        uid: user.uid,
-        displayName,
-        email,
-        preferredCity,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-      if (photoURL) {
-        payload.photoURL = photoURL;
-      }
-      await setDoc(userRef, payload);
-    } else {
-      const updates: Record<string, unknown> = {
-        displayName,
-        preferredCity,
-        updatedAt: serverTimestamp(),
-      };
-      if (photoURL) {
-        updates.photoURL = photoURL;
-      }
-      await updateDoc(userRef, updates);
+    await next;
+  } finally {
+    if (profileUpsertQueue.get(user.uid) === next) {
+      profileUpsertQueue.delete(user.uid);
     }
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
 
