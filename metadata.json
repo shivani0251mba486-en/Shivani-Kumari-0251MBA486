@@ -1,0 +1,6 @@
+{
+  "name": "SolarSewa — Residential Rooftop Solar & Subsidy Platform",
+  "description": "End-to-end residential rooftop solar marketplace for Tier-2 and Tier-3 Indian cities with 3D satellite roof sizing, automated PM Surya Ghar subsidy verification, vetted Tier-1 EPC installers, and 25-day DISCOM net-metering.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

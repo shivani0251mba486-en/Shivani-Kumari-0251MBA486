@@ -1,0 +1,286 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated homeowner profile storing display details and preferred city hub.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 160
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "preferredCity": {
+          "type": "string",
+          "enum": ["surat", "indore", "kota", "jaipur"],
+          "maxLength": 20
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "displayName", "email", "preferredCity", "createdAt", "updatedAt"]
+    },
+    "SolarProject": {
+      "title": "SolarProject",
+      "description": "Homeowner rooftop solar booking, calculator snapshot, and 25-day DISCOM tracker record.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "homeowner": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "phone": {
+          "type": "string",
+          "maxLength": 10,
+          "pattern": "^[6-9]\\d{9}$"
+        },
+        "locality": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "pinCode": {
+          "type": "string",
+          "maxLength": 6,
+          "pattern": "^\\d{6}$"
+        },
+        "cityId": {
+          "type": "string",
+          "enum": ["surat", "indore", "kota", "jaipur"],
+          "maxLength": 20
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "discom": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "monthlyBill": {
+          "type": "number"
+        },
+        "roofAreaSqFt": {
+          "type": "number"
+        },
+        "roofCondition": {
+          "type": "string",
+          "enum": ["clear-rcc", "partial-shade", "sloped-roof"],
+          "maxLength": 30
+        },
+        "systemKw": {
+          "type": "number"
+        },
+        "subsidyAmount": {
+          "type": "number"
+        },
+        "netSystemCost": {
+          "type": "number"
+        },
+        "installerId": {
+          "type": "string",
+          "maxLength": 64,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "installerName": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "preCheckPassed": {
+          "type": "boolean"
+        },
+        "currentDay": {
+          "type": "number"
+        },
+        "targetDays": {
+          "type": "number"
+        },
+        "completedSteps": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "commissioned"],
+          "maxLength": 20
+        },
+        "escrowStatus": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "subsidyStatus": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "loanStatus": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "ownerId",
+        "homeowner",
+        "phone",
+        "locality",
+        "pinCode",
+        "cityId",
+        "city",
+        "discom",
+        "monthlyBill",
+        "roofAreaSqFt",
+        "roofCondition",
+        "systemKw",
+        "subsidyAmount",
+        "netSystemCost",
+        "installerId",
+        "installerName",
+        "preCheckPassed",
+        "currentDay",
+        "targetDays",
+        "completedSteps",
+        "status",
+        "escrowStatus",
+        "subsidyStatus",
+        "loanStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DocumentPreCheckRecord": {
+      "title": "DocumentPreCheckRecord",
+      "description": "Saved PM Surya Ghar and DISCOM automated document verification snapshot.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "cityId": {
+          "type": "string",
+          "enum": ["surat", "indore", "kota", "jaipur"],
+          "maxLength": 20
+        },
+        "aadhaarName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "billName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "bankHolderName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "consumerNumber": {
+          "type": "string",
+          "minLength": 6,
+          "maxLength": 32
+        },
+        "panNumber": {
+          "type": "string",
+          "maxLength": 10,
+          "pattern": "^[A-Z]{5}[0-9]{4}[A-Z]{1}$"
+        },
+        "sanctionedLoadKw": {
+          "type": "number"
+        },
+        "roofOwnership": {
+          "type": "string",
+          "enum": ["independent", "joint-society"],
+          "maxLength": 24
+        },
+        "recommendedKw": {
+          "type": "number"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "scoreLabel": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerId",
+        "cityId",
+        "aadhaarName",
+        "billName",
+        "bankHolderName",
+        "consumerNumber",
+        "panNumber",
+        "sanctionedLoadKw",
+        "roofOwnership",
+        "recommendedKw",
+        "passed",
+        "scoreLabel",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private homeowner profile keyed by Firebase Auth UID."
+    },
+    "/solarProjects/{projectId}": {
+      "schema": { "$ref": "#/entities/SolarProject" },
+      "description": "Homeowner rooftop solar bookings and 25-day DISCOM tracker projects."
+    },
+    "/preChecks/{preCheckId}": {
+      "schema": { "$ref": "#/entities/DocumentPreCheckRecord" },
+      "description": "Homeowner PM Surya Ghar & DISCOM document pre-audit results."
+    }
+  }
+}

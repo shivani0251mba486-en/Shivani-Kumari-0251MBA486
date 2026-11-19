@@ -1,0 +1,195 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Shared primitives
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidCityId(val) {
+      return val is string && val.size() <= 20 && val in ['surat', 'indore', 'kota', 'jaipur'];
+    }
+
+    // Validation Blueprint: UserProfile
+    function isValidUserProfile(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'email', 'preferredCity', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'displayName', 'email', 'photoURL', 'preferredCity', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.uid == request.auth.uid
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 120
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 160
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 500))
+        && isValidCityId(data.preferredCity)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: SolarProject
+    function isValidSolarProject(data) {
+      return data.keys().hasAll([
+          'id', 'ownerId', 'homeowner', 'phone', 'locality', 'pinCode',
+          'cityId', 'city', 'discom', 'monthlyBill', 'roofAreaSqFt',
+          'roofCondition', 'systemKw', 'subsidyAmount', 'netSystemCost',
+          'installerId', 'installerName', 'preCheckPassed', 'currentDay',
+          'targetDays', 'completedSteps', 'status', 'escrowStatus',
+          'subsidyStatus', 'loanStatus', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'ownerId', 'homeowner', 'phone', 'locality', 'pinCode',
+          'cityId', 'city', 'discom', 'monthlyBill', 'roofAreaSqFt',
+          'roofCondition', 'systemKw', 'subsidyAmount', 'netSystemCost',
+          'installerId', 'installerName', 'preCheckPassed', 'currentDay',
+          'targetDays', 'completedSteps', 'status', 'escrowStatus',
+          'subsidyStatus', 'loanStatus', 'createdAt', 'updatedAt'
+        ])
+        && data.id is string && data.id.size() >= 1 && data.id.size() <= 64 && data.id.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && data.homeowner is string && data.homeowner.size() >= 2 && data.homeowner.size() <= 120
+        && data.phone is string && data.phone.size() == 10 && data.phone.matches('^[6-9]\\d{9}$')
+        && data.locality is string && data.locality.size() >= 2 && data.locality.size() <= 160
+        && data.pinCode is string && data.pinCode.size() == 6 && data.pinCode.matches('^\\d{6}$')
+        && isValidCityId(data.cityId)
+        && data.city is string && data.city.size() >= 2 && data.city.size() <= 40
+        && data.discom is string && data.discom.size() >= 2 && data.discom.size() <= 80
+        && data.monthlyBill is number && data.monthlyBill >= 500 && data.monthlyBill <= 200000
+        && data.roofAreaSqFt is number && data.roofAreaSqFt >= 100 && data.roofAreaSqFt <= 20000
+        && data.roofCondition is string && data.roofCondition.size() <= 30 && data.roofCondition in ['clear-rcc', 'partial-shade', 'sloped-roof']
+        && data.systemKw is number && data.systemKw >= 1 && data.systemKw <= 50
+        && data.subsidyAmount is number && data.subsidyAmount >= 0 && data.subsidyAmount <= 78000
+        && data.netSystemCost is number && data.netSystemCost >= 0 && data.netSystemCost <= 5000000
+        && data.installerId is string && data.installerId.size() >= 1 && data.installerId.size() <= 64 && data.installerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.installerName is string && data.installerName.size() >= 2 && data.installerName.size() <= 100
+        && data.preCheckPassed is bool
+        && data.currentDay is number && data.currentDay >= 1 && data.currentDay <= 25
+        && data.targetDays is number && data.targetDays == 25
+        && data.completedSteps is number && data.completedSteps >= 1 && data.completedSteps <= 6
+        && data.status is string && data.status.size() <= 20 && data.status in ['active', 'commissioned']
+        && data.escrowStatus is string && data.escrowStatus.size() >= 2 && data.escrowStatus.size() <= 120
+        && data.subsidyStatus is string && data.subsidyStatus.size() >= 2 && data.subsidyStatus.size() <= 120
+        && data.loanStatus is string && data.loanStatus.size() >= 2 && data.loanStatus.size() <= 120
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Validation Blueprint: DocumentPreCheckRecord
+    function isValidPreCheckRecord(data) {
+      return data.keys().hasAll([
+          'ownerId', 'cityId', 'aadhaarName', 'billName', 'bankHolderName',
+          'consumerNumber', 'panNumber', 'sanctionedLoadKw', 'roofOwnership',
+          'recommendedKw', 'passed', 'scoreLabel', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'ownerId', 'cityId', 'aadhaarName', 'billName', 'bankHolderName',
+          'consumerNumber', 'panNumber', 'sanctionedLoadKw', 'roofOwnership',
+          'recommendedKw', 'passed', 'scoreLabel', 'createdAt', 'updatedAt'
+        ])
+        && data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 && data.ownerId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.ownerId == request.auth.uid
+        && isValidCityId(data.cityId)
+        && data.aadhaarName is string && data.aadhaarName.size() >= 2 && data.aadhaarName.size() <= 120
+        && data.billName is string && data.billName.size() >= 2 && data.billName.size() <= 120
+        && data.bankHolderName is string && data.bankHolderName.size() >= 2 && data.bankHolderName.size() <= 120
+        && data.consumerNumber is string && data.consumerNumber.size() >= 6 && data.consumerNumber.size() <= 32
+        && data.panNumber is string && data.panNumber.size() == 10 && data.panNumber.matches('^[A-Z]{5}[0-9]{4}[A-Z]{1}$')
+        && data.sanctionedLoadKw is number && data.sanctionedLoadKw >= 1 && data.sanctionedLoadKw <= 50
+        && data.roofOwnership is string && data.roofOwnership.size() <= 24 && data.roofOwnership in ['independent', 'joint-society']
+        && data.recommendedKw is number && data.recommendedKw >= 1 && data.recommendedKw <= 50
+        && data.passed is bool
+        && data.scoreLabel is string && data.scoreLabel.size() >= 2 && data.scoreLabel.size() <= 80
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // Users collection (PII isolated strictly to profile owner)
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
+      allow list: if false;
+      allow create: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUserProfile(incoming())
+        && incoming().uid == existing().uid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'preferredCity', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Solar Projects collection (Bookings & 25-Day Turnkey Tracker)
+    match /solarProjects/{projectId} {
+      allow get: if isSignedIn() && isValidId(projectId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(projectId)
+        && incoming().id == projectId
+        && isValidSolarProject(incoming())
+        && incoming().status == 'active'
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(projectId)
+        && existing().ownerId == request.auth.uid
+        && existing().status != 'commissioned'
+        && isValidSolarProject(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().id == existing().id
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().completedSteps >= existing().completedSteps
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'currentDay', 'completedSteps', 'status', 'escrowStatus', 'subsidyStatus', 'updatedAt'
+        ]);
+      allow delete: if isSignedIn() && isValidId(projectId) && existing().ownerId == request.auth.uid;
+    }
+
+    // Document Pre-Checks collection
+    match /preChecks/{preCheckId} {
+      allow get: if isSignedIn() && isValidId(preCheckId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(preCheckId)
+        && isValidPreCheckRecord(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(preCheckId)
+        && existing().ownerId == request.auth.uid
+        && isValidPreCheckRecord(incoming())
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'cityId', 'aadhaarName', 'billName', 'bankHolderName', 'consumerNumber',
+          'panNumber', 'sanctionedLoadKw', 'roofOwnership', 'recommendedKw',
+          'passed', 'scoreLabel', 'updatedAt'
+        ]);
+      allow delete: if isSignedIn() && isValidId(preCheckId) && existing().ownerId == request.auth.uid;
+    }
+  }
+}
