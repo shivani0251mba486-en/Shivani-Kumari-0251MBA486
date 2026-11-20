@@ -1,11 +1,20 @@
 import { initializeApp } from 'firebase/app';
 import { GoogleAuthProvider, getAuth } from 'firebase/auth';
 import { doc, getDocFromServer, getFirestore } from 'firebase/firestore';
-import firebaseConfig from '../firebase-applet-config.json';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyCx6mxWp8bTmkAY_5oHNJbRAYu0X8D_wyA',
+  authDomain: 'solar-sewa.firebaseapp.com',
+  projectId: 'solar-sewa',
+  storageBucket: 'solar-sewa.firebasestorage.app',
+  messagingSenderId: '520074038984',
+  appId: '1:520074038984:web:76f94d243f97b4c0055ffd',
+  measurementId: 'G-3KQDVJH15D',
+};
 
 const app = initializeApp(firebaseConfig);
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });
